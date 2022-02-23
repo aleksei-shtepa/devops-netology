@@ -7,15 +7,16 @@ Vagrant.configure("2") do |config|
         v.customize ["modifyvm", :id, "--vram", "12"]
         v.customize ["modifyvm", :id, "--graphicscontroller", "vmsvga"]
 
-        lvm_experiments_disk0_path = "/tmp/lvm_experiments_disk0.vmdk"
-        lvm_experiments_disk1_path = "/tmp/lvm_experiments_disk1.vmdk"
-        v.customize ['createmedium', '--filename', lvm_experiments_disk0_path, '--size', 2560]
-        v.customize ['createmedium', '--filename', lvm_experiments_disk1_path, '--size', 2560]
-        v.customize ['storageattach', :id, '--storagectl', 'SATA Controller', '--port', 1, '--device', 0, '--type', 'hdd', '--medium', lvm_experiments_disk0_path]
-        v.customize ['storageattach', :id, '--storagectl', 'SATA Controller', '--port', 2, '--device', 0, '--type', 'hdd', '--medium', lvm_experiments_disk1_path]
+        # lvm_experiments_disk0_path = "/tmp/lvm_experiments_disk0.vmdk"
+        # lvm_experiments_disk1_path = "/tmp/lvm_experiments_disk1.vmdk"
+        # v.customize ['createmedium', '--filename', lvm_experiments_disk0_path, '--size', 2560]
+        # v.customize ['createmedium', '--filename', lvm_experiments_disk1_path, '--size', 2560]
+        # v.customize ['storageattach', :id, '--storagectl', 'SATA Controller', '--port', 1, '--device', 0, '--type', 'hdd', '--medium', lvm_experiments_disk0_path]
+        # v.customize ['storageattach', :id, '--storagectl', 'SATA Controller', '--port', 2, '--device', 0, '--type', 'hdd', '--medium', lvm_experiments_disk1_path]
   
     end
 
     config.vm.network "forwarded_port", guest: 19999, host: 19999
+    config.vm.network "private_network", type: "dhcp"
 
   end
