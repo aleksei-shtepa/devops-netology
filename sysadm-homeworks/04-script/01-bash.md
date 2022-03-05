@@ -107,11 +107,11 @@
         for iter in {1..5}
         do
             nc -zvw1 ${HOSTS[$host]} 80 2>> $FILE_LOG
-            if [ $? == 1 ]
-        then
-            echo ${HOSTS[$host]} >> $FILE_ERROR
-            break
-        fi
+            if [ $? != 0 ]
+            then
+                echo ${HOSTS[$host]} >> $FILE_ERROR
+                break
+            fi
         done
     done
     ```
