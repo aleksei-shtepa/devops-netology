@@ -48,15 +48,15 @@ class Animals():
 
 class Bird(Animals):
     def get_egg(self):
-        print("Take one egg.")
+        print(f"{self.name}: Take one egg.")
 
 class Milked(Animals):
     def milk(self):
-        print("Take the bottle of milk.")
+        print(f"{self.name}: Take the bottle of milk.")
 
 class Sheared(Animals):
     def shear(self):
-        print("Take wool.")
+        print(f"{self.name}: Take wool.")
 
 class Goos(Bird):
     def __init__(self, name, weight=0):
@@ -80,7 +80,7 @@ class Chicken(Bird):
         self.sound = "Ko-koo-ko"
 
 
-class Goat(Bird):
+class Goat(Milked):
     def __init__(self, name, weight=0):
         super().__init__(name, weight)
         self.sound = "Meeee, meeeee"
@@ -91,16 +91,44 @@ class Duck(Bird):
         self.sound = "Krya-krya"
 
 
-goos1 = Goos("Серый")
-goos2 = Goos("Белый")
-cow1 = Cow("Манька")
-sheep1 = Sheep("Барашек")
-sheep2 = Sheep("Кудрявый")
-chicken1 = Chicken("Ко-Ко")
-chicken2 = Chicken("Кукареку")
-goat1 = Goat("Рога")
-goat1 = Goat("Копыта")
-duck1 = Duck("Кряква")
+goos1 = Goos("Серый", 5)
+goos2 = Goos("Белый", 5)
+cow1 = Cow("Манька", 250)
+sheep1 = Sheep("Барашек", 50)
+sheep2 = Sheep("Кудрявый", 50)
+chicken1 = Chicken("Ко-Ко", 3)
+chicken2 = Chicken("Кукареку", 3)
+goat1 = Goat("Рога", 50)
+goat2 = Goat("Копыта", 50)
+duck1 = Duck("Кряква", 3)
 
-goos1.voice()
-goos1.feed()
+ani = [goos1, goos2, cow1, sheep1, sheep2, chicken1, chicken2, goat1, goat2, duck1]
+
+print("Всех покормить:")
+for a in ani:
+    a.feed()
+
+print("\nВсе кричат:")
+for a in ani:
+    a.voice()
+
+print("\nСбор урожая:")
+for a in ani:
+    if isinstance(a, Milked):
+        a.milk()
+    elif isinstance(a, Bird):
+        a.get_egg()
+    elif isinstance(a, Sheared):
+        a.shear()
+
+weight_all = 0
+max_animal = ani[0]
+
+for a in ani:
+    weight_all += a.weight
+    if a.weight > max_animal.weight:
+        max_animal = a
+
+print()
+print(f"Вес всех животных: {weight_all}кг.")
+print(f"Самое тяжёлое животное: {max_animal.name} ({max_animal.weight}кг.)")
