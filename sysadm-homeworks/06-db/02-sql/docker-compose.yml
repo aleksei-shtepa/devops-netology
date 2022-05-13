@@ -1,0 +1,12 @@
+version: "3.9"
+services:
+  postgress:
+    image: "docker.io/postgres:12-alpine"
+    container_name: postgres
+#    ports:
+#      - "5432:5432"
+    volumes:
+      - ./db:/var/lib/postgresql/data
+      - ./backup:/backup
+    environment:
+      POSTGRES_PASSWORD: postgres
