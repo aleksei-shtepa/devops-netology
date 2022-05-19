@@ -1,0 +1,16 @@
+version: "3.9"
+services:
+  mysql-8:
+    image: "docker.io/mysql:8"
+    container_name: mysql-8
+    # user: "1000:1000"
+#    ports:
+#      - "3306:3306"
+    volumes:
+      - ./db:/var/lib/mysql
+      - ./mysql.cnf:/etc/mysql/conf.d/my.cnf
+    environment:
+      MYSQL_DATABASE: test_db
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-user}
+      MYSQL_USER: ${MYSQL_USER:-user}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
