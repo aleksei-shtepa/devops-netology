@@ -1,0 +1,12 @@
+cluster.name: shtepa-cluster
+network.host: 0.0.0.0
+
+# Имя ноды по умолчанию.
+# (Переопределяется через переменные окружения)
+node.name: netology_test
+
+# Расположение по умолчанию для данных, логов и снимков.
+# (Переопределяется через переменные окружения)
+path.data: /var/lib/elastic-7
+path.logs: /var/log/elastic-7
+path.repo: /usr/share/elasticsearch/snapshots
