@@ -1,0 +1,24 @@
+version: 3
+projects:
+
+# файлы проекта находятся в рабочем каталоге
+- dir: .
+  # используем terraform workspace stage
+  workspace: stage
+  # параметры автопланирования
+  autoplan:
+    # включить раздел автопланирования
+    enabled: true
+    # при изменении файлов terraform в рабочем каталоге и каталоге модулей
+    when_modified: ["./modules/**/*.tf", "*.tf"]
+
+# файлы проекта находятся в рабочем каталоге
+- dir: .
+  # используем terraform workspace prod
+  workspace: prod
+  # параметры автопланирования
+  autoplan:
+    # включить раздел автопланирования  
+    enabled: true
+    # при изменении файлов terraform в рабочем каталоге и каталоге модулей
+    when_modified: ["./modules/**/*.tf", "*.tf"]
