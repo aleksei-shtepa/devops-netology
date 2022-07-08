@@ -1,0 +1,5 @@
+---
+  fedora:
+    hosts:
+      fedora36:
+        ansible_connection: containers.podman.podman

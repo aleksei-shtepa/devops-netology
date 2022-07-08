@@ -1,0 +1,18 @@
+version: '3'
+services:
+    centos7:
+      image: docker.io/library/centos:7
+      container_name: centos7
+      command: sleep 43200
+
+    ubuntu:
+      build:
+        context: .
+        dockerfile: Dockerfile.ubuntu
+      container_name: ubuntu
+      command: sleep 43200
+
+    fedora36:
+      image: docker.io/library/fedora:36
+      container_name: fedora36
+      command: sleep 43200

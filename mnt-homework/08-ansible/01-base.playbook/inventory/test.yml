@@ -1,0 +1,11 @@
+---
+  inside:
+    hosts:
+      localhost:
+        ansible_connection: local
+  # stends:
+  #   hosts:
+  #     mprime:
+  #       ansible_connection: ssh
+  #       ansible_ssh_user: micard
+  #       ansible_host: '192.168.1.32'
