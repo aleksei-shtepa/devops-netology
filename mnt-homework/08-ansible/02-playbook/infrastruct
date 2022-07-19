@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+export TF_VAR_yc_token=$(yc config get token)
+export TF_VAR_yc_cloud_id=$(yc config get cloud-id)
+export TF_VAR_yc_folder_id=$(yc config get folder-id)
+
+init() {
+    cd terraform && terraform init
+}
+
+apply() {
+    cd terraform && terraform apply -auto-approve
+    cd ..
+}
+
+destroy() {
+    cd terraform && terraform destroy -auto-approve
+    cd ..
+}
+
+clear() {
+    cd terraform && terraform destroy -auto-approve
+    rm -rf .terraform*
+    rm terraform.tfstate*
+    cd ..
+}
+
+playbook() {
+    ansible-playbook site.yml --diff -i inventory/prod.yml
+}
+
+if [ $1 ]; then
+    $1
+else
+    apply
+fi
