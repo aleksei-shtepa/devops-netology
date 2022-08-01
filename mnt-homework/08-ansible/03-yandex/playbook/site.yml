@@ -1,0 +1,185 @@
+---
+- name: Install Clickhouse
+  tags: clickhouse
+  hosts: clickhouse
+  handlers:
+    - name: Start clickhouse service
+      become: true
+      ansible.builtin.service:
+        name: clickhouse-server
+        state: restarted
+  tasks:
+    - name: Get clickhouse distrib
+      block:
+        - name: Get clickhouse distrib
+          ansible.builtin.get_url:
+            url: "https://packages.clickhouse.com/rpm/stable/{{ item }}-{{ clickhouse_version }}.noarch.rpm"
+            dest: "./{{ item }}-{{ clickhouse_version }}.rpm"
+            mode: '0644'
+          with_items: "{{ clickhouse_packages }}"
+      rescue:
+        - name: Get clickhouse distrib
+          ansible.builtin.get_url:
+            url: "https://packages.clickhouse.com/rpm/stable/clickhouse-common-static-{{ clickhouse_version }}.x86_64.rpm"
+            dest: "./clickhouse-common-static-{{ clickhouse_version }}.rpm"
+            mode: '0644'
+    - name: Install clickhouse packages
+      become: true
+      ansible.builtin.yum:
+        name:
+          - clickhouse-common-static-{{ clickhouse_version }}.rpm
+          - clickhouse-client-{{ clickhouse_version }}.rpm
+          - clickhouse-server-{{ clickhouse_version }}.rpm
+        disable_gpg_check: true
+        state: present
+      # notify: Start clickhouse service
+    - name: Configure clickhouse host bind
+      become: true
+      ansible.builtin.copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        mode: "0644"
+        owner: "clickhouse"
+        group: "clickhouse"
+      loop:
+        - { src: 'clickhouse.yml', dest: '/etc/clickhouse-server/config.d/all-hosts.yml' }
+        - { src: 'logger.yml', dest: '/etc/clickhouse-server/users.d/logger.yml' }
+      notify: Start clickhouse service
+  post_tasks:
+    - name: Create database
+      ansible.builtin.command: "clickhouse-client -q 'create database logs;'"
+      register: create_db
+      failed_when: create_db.rc != 0 and create_db.rc !=82
+      changed_when: create_db.rc == 0
+
+- name: Install Vector
+  tags: vector
+  hosts: vector
+  become: true
+  vars:
+    archive_file: vector-{{ vecrot_version }}-x86_64-unknown-linux-musl.tar.gz
+  # handlers:
+  #   - name: Start vector service
+  #     become: true
+  #     ansible.builtin.service:
+  #       name: vector
+  #       state: restarted
+  tasks:
+    - name: Create vector group
+      ansible.builtin.group:
+        name: vector
+    - name: Create vector user
+      ansible.builtin.user:
+        name: vector
+        group: vector
+    - name: Get Vector distributive
+      become_user: vector
+      ansible.builtin.get_url:
+        url: "https://packages.timber.io/vector/{{ vecrot_version }}/{{ archive_file }}"
+        dest: "/tmp/{{ archive_file }}"
+        mode: '0644'
+    - name: Unarchive Vector distib
+      become_user: vector
+      ansible.builtin.unarchive:
+        src: "/tmp/{{ archive_file }}"
+        dest: "/home/vector"
+        remote_src: true
+        extra_opts:
+          - --strip-components=2
+        owner: vector
+        group: vector
+      changed_when: false
+    - name: install Vector
+      ansible.builtin.copy:
+        remote_src: true
+        src: "/home/vector/bin/vector"
+        dest: "/usr/bin"
+        mode: u=rwx,g=rx,o=rx
+        group: vector
+    - name: Setup Vector into Systemd
+      ansible.builtin.copy:
+        remote_src: true
+        src: "/home/vector/etc/systemd/vector.service"
+        dest: "/etc/systemd/system"
+        mode: u=rw,g=r,o=r
+    - name: Prepare data location
+      ansible.builtin.file:
+        path: /var/lib/vector
+        state: directory
+        owner: vector
+        group: vector
+        mode: '0755'
+    - name: Prepare config location
+      ansible.builtin.file:
+        path: /etc/vector
+        state: directory
+        owner: vector
+        group: vector
+        mode: '0755'
+    - name: Vector configuration
+      ansible.builtin.template:
+        src: vector.toml.j2
+        dest: "/etc/vector/vector.toml"
+        group: vector
+        owner: vector
+        mode: '0644'
+      # notify: Start vector service
+    # - name: Started Vector daemon
+    #   ansible.builtin.meta: flush_handlers
+    - name: Started Vector daemon
+      ansible.builtin.systemd:
+        name: vector
+        state: started
+        enabled: true
+
+- name: Install Lighthouse
+  tags: lighthouse
+  hosts: app
+  handlers:
+    - name: Start nginx service
+      become: true
+      ansible.builtin.service:
+        name: nginx
+        state: restarted
+  tasks:
+    - name: Create app group
+      become: true
+      ansible.builtin.group:
+        name: app
+    - name: Create app user
+      become: true
+      ansible.builtin.user:
+        name: app
+        group: app
+    - name: Configure nginx repository file
+      become: true
+      ansible.builtin.copy:
+        src: "nginx.repo"
+        dest: "/etc/yum.repos.d/nginx.repo"
+        mode: "0644"
+        owner: "root"
+        group: "root"
+    - name: Install dependences packages
+      become: true
+      ansible.builtin.yum:
+        name:
+          - git
+          - nginx
+        state: present
+      # notify: Start nginx service
+    - name: Clone Lighthouse sources
+      become: true
+      ansible.builtin.git:
+        repo: https://github.com/VKCOM/lighthouse.git
+        dest: /usr/share/nginx/lighthouse
+        single_branch: true
+        version: master
+    - name: Configure NGINX for Lighthouse
+      become: true
+      ansible.builtin.copy:
+        src: "lighthouse.conf"
+        dest: "/etc/nginx/conf.d/default.conf"
+        mode: "0644"
+        owner: "root"
+        group: "root"
+      notify: Start nginx service

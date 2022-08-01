@@ -1,0 +1,13 @@
+---
+profiles:
+  default:
+    date_time_input_format: best_effort
+
+users:
+  logger:
+    password: "logger"
+    networks:
+      ip: "::"
+    profile: default
+    quota: default
+    access_management: 0

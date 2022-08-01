@@ -1,0 +1,8 @@
+---
+%{ for name, host in instances ~}
+${name}:
+  hosts:
+    ${name}-01:
+      ansible_host: ${host.ip}
+      ansible_user: ${host.user}
+%{ endfor ~}
