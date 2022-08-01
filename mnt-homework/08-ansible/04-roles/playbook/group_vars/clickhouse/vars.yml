@@ -1,0 +1,20 @@
+---
+clickhouse_version: "22.3.3.44"
+
+clickhouse_listen_host:
+  - "::"
+
+clickhouse_dbs_custom:
+  - { name: logs }
+
+clickhouse_profiles_custom:
+ default:
+   date_time_input_format: best_effort
+
+clickhouse_users_custom:
+  - { name: "logger",
+      password: "logger",
+      networks: { "::" },
+      profile: "default",
+      quota: "default",
+      access_management: 0 }
