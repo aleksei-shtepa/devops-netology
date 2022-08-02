@@ -1,0 +1,2 @@
+terraform init -var="yc_token=$(yc config get token)" -var="yc_cloud_id=$(yc config get cloud-id)" -var="yc_folder_id=$(yc config get folder-id)" -backend-config="access_key=$(cat ../terraform_local/access_key)" -backend-config="secret_key=$(cat ../terraform_local/secret_key)" -backend-config="bucket=$(cat ../terraform_local/bucket)" -reconfigure
+# terraform plan -var="yc_token=$(yc config get token)" -var="yc_cloud_id=$(yc config get cloud-id)" -var="yc_folder_id=$(yc config get folder-id)"
