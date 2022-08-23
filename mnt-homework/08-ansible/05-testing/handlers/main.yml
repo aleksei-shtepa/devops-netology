@@ -1,0 +1,12 @@
+---
+- name: Start vector service
+  ansible.builtin.service:
+    name: vector
+    state: restarted
+    enabled: true
+  when:
+    - ansible_virtualization_type != "podman"
+    - ansible_virtualization_type != "docker"
+# - name: Start vector programm
+#   ansible.builtin.command: bash -l -c /usr/bin/vector &
+#   when: ansible_virtualization_type == "podman" or ansible_virtualization_type == "docker"

@@ -1,0 +1,63 @@
+---
+- name: Create vector group
+  ansible.builtin.group:
+    name: vector
+- name: Create vector user
+  ansible.builtin.user:
+    name: vector
+    group: vector
+- name: Get Vector distributive
+  become_user: vector
+  ansible.builtin.get_url:
+    url: "https://packages.timber.io/vector/{{ vector_version }}/{{ archive_file }}"
+    dest: "/tmp/{{ archive_file }}"
+    mode: '0644'
+- name: Unarchive Vector distib
+  become_user: vector
+  ansible.builtin.unarchive:
+    src: "/tmp/{{ archive_file }}"
+    dest: "/home/vector"
+    remote_src: true
+    extra_opts:
+      - --strip-components=2
+    owner: vector
+    group: vector
+  changed_when: false
+- name: install Vector
+  ansible.builtin.copy:
+    remote_src: true
+    src: "/home/vector/bin/vector"
+    dest: "/usr/bin"
+    mode: u=rwx,g=rx,o=rx
+    group: vector
+- name: Setup Vector into Systemd
+  ansible.builtin.copy:
+    remote_src: true
+    src: "/home/vector/etc/systemd/vector.service"
+    dest: "/etc/systemd/system"
+    mode: u=rw,g=r,o=r
+- name: Prepare data location
+  ansible.builtin.file:
+    path: /var/lib/vector
+    state: directory
+    owner: vector
+    group: vector
+    mode: '0755'
+- name: Prepare config location
+  ansible.builtin.file:
+    path: /etc/vector
+    state: directory
+    owner: vector
+    group: vector
+    mode: '0755'
+- name: Vector configuration
+  ansible.builtin.template:
+    src: vector.toml.j2
+    dest: "/etc/vector/vector.toml"
+    group: vector
+    owner: vector
+    mode: '0644'
+  notify:
+    - Start vector service
+    # - Start vector programm
+

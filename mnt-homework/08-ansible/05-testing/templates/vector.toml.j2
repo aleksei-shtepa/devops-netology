@@ -1,0 +1,13 @@
+# Set global options
+data_dir = "/var/lib/vector"
+
+[sources.vector_internal_logs]
+type = "internal_logs"
+
+[sinks.my_sink_id]
+type = "clickhouse"
+inputs = [ "vector_internal_logs" ]
+database = "logs"
+endpoint = "http://{{ config_clickhouse_host }}:8123"
+table = "vector"
+compression = "gzip"

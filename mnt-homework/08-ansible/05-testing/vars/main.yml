@@ -1,0 +1,3 @@
+---
+# vars file for vector-role
+archive_file: vector-{{ vector_version }}-x86_64-unknown-linux-musl.tar.gz
