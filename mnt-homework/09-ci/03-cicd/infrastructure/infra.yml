@@ -1,0 +1,46 @@
+---
+- name: Prepare infrastructure
+  hosts: localhost
+  vars:
+    project_dir: terraform/yandex
+  vars_prompt:
+    - name: i_state
+      prompt: State of infrastructure (planned | present (default) | absent)?
+      private: no
+      default: present
+  tasks:
+    - name: Get Yandex Cloud token
+      ansible.builtin.shell: yc config get token
+      register: yc_token
+      ignore_errors: true
+      changed_when: yc_token.rc != 0
+      failed_when: yc_token.rc != 0
+
+    - name: Get Yandex Cloud cloud-id
+      ansible.builtin.shell: yc config get cloud-id
+      register: yc_cloud_id
+      ignore_errors: true
+      changed_when: yc_cloud_id.rc != 0
+      failed_when: yc_cloud_id.rc != 0
+
+    - name: Get Yandex Cloud folder-id
+      ansible.builtin.shell: yc config get folder-id
+      register: yc_folder_id
+      ignore_errors: true
+      changed_when: yc_folder_id.rc != 0
+      failed_when: yc_folder_id.rc != 0
+
+    - name: Basic deploy of a service
+      community.general.terraform:
+        project_path: "{{ project_dir }}"
+        state: "{{ i_state }}"
+        force_init: true
+      environment:
+        TF_VAR_yc_token: "{{ yc_token.stdout }}"
+        TF_VAR_yc_cloud_id: "{{ yc_cloud_id.stdout }}"
+        TF_VAR_yc_folder_id: "{{ yc_folder_id.stdout }}"
+      when:
+        - (i_state == "present") or (i_state == "absent")
+        - yc_token.rc == 0
+        - yc_cloud_id.rc == 0
+        - yc_folder_id.rc == 0
