@@ -1,4 +1,21 @@
 ---
+- name: Python for Jenkins Agent
+  hosts:
+    - jenkins-agent-01
+  roles:
+    - python
+  vars:
+    python_packages: []
+    python_setup_mode: standard
+    python_versions: [3.10]
+
+    python_build_flags:
+      - --enable-optimizations
+      - --enable-option-checking=fatal
+
+    python_setuptools_version: latest
+    python_virtualenv_version: ''  # We do not want it
+
 - name: Preapre all hosts
   hosts: all
   tasks:
@@ -91,10 +108,17 @@
       yum:
         name:
           - git
-          - python3
-          - docker-ce
-          - docker-ce-cli
+          # - python3
+          # - docker-ce
+          # - docker-ce-cli
+          - podman
           - containerd.io
+        state: present
+    - name: Set user.max_user_namespaces value
+      become_user: root
+      ansible.posix.sysctl:
+        name: user.max_user_namespaces
+        value: '15000'
         state: present
     - name: Update pip
       become_user: root
@@ -102,13 +126,16 @@
         executable: pip3
         name: pip
         extra_args: --upgrade
-    - name: Install Ansible
+    - name: Install  Ansible and Molecule 
       become_user: root
       pip:
         executable: pip3
         name:
           - selinux
-          - ansible<3.0
+          # - ansible<3.0
+          - ansible
+          - molecule
+          - molecule-podman
         state: present
     - name: Reinstall Selinux
       become_user: root
@@ -132,12 +159,12 @@
       user:
         name: "{{ jenkins_user_name }}"
         groups: docker
-    - name: Restart docker
-      become_user: root
-      systemd:
-        name: docker
-        state: restarted
-        enabled: true
+    # - name: Restart docker
+    #   become_user: root
+    #   systemd:
+    #     name: docker
+    #     state: restarted
+    #     enabled: true
     - name: Install agent.jar
       get_url:
         url: "http://{{ hostvars['jenkins-master-01']['ansible_host'] }}:8080/jnlpJars/agent.jar"
