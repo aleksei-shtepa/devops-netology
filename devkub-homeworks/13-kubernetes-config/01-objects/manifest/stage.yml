@@ -1,0 +1,115 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: test-13-01
+  name: test-13-01
+  namespace: stage
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-13-01
+  template:
+    metadata:
+      labels:
+        app: test-13-01
+    spec:
+      containers:
+        - name: test-13-01-frontend
+          image: alekseishtepa/13-kub-config-01-frontend:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: frontend-port
+              containerPort: 80
+              protocol: TCP
+        - name: test-13-01-backend
+          image: alekseishtepa/13-kub-config-01-backend:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: backend-port
+              containerPort: 9000
+              protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-13-01-srv
+  namespace: stage
+spec:
+  selector:
+    app: test-13-01
+  ports:
+    - name: test-13-01-frontend-srv
+      port: 8000
+      targetPort: 80
+      protocol: TCP
+    - name: test-13-01-backend-srv
+      port: 9000
+      targetPort: 9000
+      protocol: TCP
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: db
+  name: db
+  namespace: stage
+spec:
+  selector:
+    matchLabels:
+      app: db
+  serviceName: "db-srv"
+  template:
+    metadata:
+      labels:
+        app: db
+    spec:
+      containers:
+        - name: db
+          image: postgres:13-alpine
+          imagePullPolicy: "IfNotPresent"
+          env:
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_PASSWORD
+              value: postgres
+            - name: POSTGRES_DB
+              value: news
+          volumeMounts:
+            - name: db-volume
+              mountPath: "/var/lib/postgresql/data"
+      volumes:
+        - name: db-volume
+          persistentVolumeClaim:
+            claimName: db-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: db-srv
+  namespace: stage
+spec:
+  ports:
+    - name: db
+      port: 5432
+      targetPort: 5432
+      protocol: TCP
+  selector:
+    app: db
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: db-pvc
+  namespace: stage
+spec:
+  storageClassName: yc-network-hdd
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+...
