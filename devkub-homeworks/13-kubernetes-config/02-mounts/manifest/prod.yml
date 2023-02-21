@@ -1,0 +1,175 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: test-13-01-frontend
+  name: test-13-01-frontend
+  namespace: production
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: test-13-01-frontend
+  template:
+    metadata:
+      labels:
+        app: test-13-01-frontend
+    spec:
+      containers:
+        - name: test-13-01-frontend
+          image: alekseishtepa/13-kub-config-01-frontend:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: BASE_URL
+              value: http://backend-svc:9000
+          ports:
+            - name: frontend-port
+              containerPort: 80
+              protocol: TCP
+          volumeMounts:
+            - mountPath: "/exchange"
+              name: nfs-storage
+      volumes:
+        - name: nfs-storage
+          persistentVolumeClaim:
+            claimName: test-dynamic-volume-claim
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-13-01-frontend-srv
+  namespace: production
+spec:
+  selector:
+    app: test-13-01-frontend
+  ports:
+    - name: frontend-port
+      port: 8000
+      targetPort: 80
+      protocol: TCP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: test-13-01-backend
+  name: test-13-01-backend
+  namespace: production
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: test-13-01-backend
+  template:
+    metadata:
+      labels:
+        app: test-13-01-backend
+    spec:
+      containers:
+        - name: test-13-01-backend
+          image: alekseishtepa/13-kub-config-01-backend:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: DATABASE_URL
+              value: "postgresql://postgres:postgres@db-svc:5432/news"
+          ports:
+            - name: backend-port
+              containerPort: 9000
+              protocol: TCP
+          volumeMounts:
+            - mountPath: "/exchange"
+              name: nfs-storage
+      volumes:
+        - name: nfs-storage
+          persistentVolumeClaim:
+            claimName: test-dynamic-volume-claim
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-13-01-backend-srv
+  namespace: production
+spec:
+  selector:
+    app: test-13-01-backend
+  ports:
+    - name: backend-port
+      port: 9000
+      targetPort: 9000
+      protocol: TCP
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: db
+  name: db
+  namespace: production
+spec:
+  selector:
+    matchLabels:
+      app: db
+  serviceName: "db"
+  template:
+    metadata:
+      labels:
+        app: db
+    spec:
+      containers:
+        - name: db
+          image: postgres:13-alpine
+          imagePullPolicy: "IfNotPresent"
+          env:
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_PASSWORD
+              value: postgres
+            - name: POSTGRES_DB
+              value: news
+          volumeMounts:
+            - name: db-volume
+              mountPath: "/var/lib/postgresql/data"
+      volumes:
+        - name: db-volume
+          persistentVolumeClaim:
+            claimName: db-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: db-srv
+  namespace: production
+spec:
+  ports:
+    - name: db
+      port: 5432
+      targetPort: 5432
+      protocol: TCP
+  selector:
+    app: db
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: db-pvc
+  namespace: production
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: test-dynamic-volume-claim
+spec:
+  storageClassName: "nfs"
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+...
