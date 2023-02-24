@@ -17,7 +17,7 @@
 
 1. Для удобства работы разместил поды задания в контексте `production`. 
 
-```shell
+```ShellSession
  ~/w/n/d/d/13-kubernetes-config ❯ kubectl config set-context production
 Context "production" created.
 
@@ -38,7 +38,7 @@ production
 
 1. В предварительно развёрнутом в Яндекс облаке кластере kubernetes развернул поды `backend`, `frontend` и `db`.
 
-```bash
+```ShellSession
  ~/w/n/d/d/13-kubernetes-config ❯ kubectl apply -f 03-kubctl/manifest/ -n production
 deployment.apps/backend created
 service/backend-svc created
@@ -52,7 +52,7 @@ persistentvolume/db-pv created
 
 Полученные поды из пространства имён `production`:
 
-```console
+```ShellSession
  ~/w/n/d/d/13-kubernetes-config ❯ kubectl get pods -o wide -n production 
 NAME                       READY   STATUS    RESTARTS   AGE     IP             NODE                        NOMINATED NODE   READINESS GATES
 backend-d5c95cb66-97d62    1/1     Running   0          3m27s   10.112.130.7   cl1umi92nqepnfdg22l0-ocok   <none>           <none>
