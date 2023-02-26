@@ -1,0 +1,18 @@
+------------------------------------------------------------
+
+  Current chart version: {{ .Chart.Version }}
+  Deploy application version: {{ .Chart.AppVersion }}
+  with image tags and replicas:
+    - Frontend: {{ .Values.frontend.image_tag }} ({{ .Values.frontend.replicas }})
+    - Backend: {{ .Values.backend.image_tag }} ({{ .Values.backend.replicas }})
+    - Database: {{ .Values.images.db }} ({{ .Values.db.replicas }})
+
+  {{- if and .Values.db.user .Values.db.password }}
+  Database URL: postgresql://{{ .Values.db.user }}:{{ .Values.db.password }}@{{ .Release.Name }}-db-svc:{{ .Values.db.port_ext | default .Values.db.port }}/{{ .Values.db.name }}
+  {{- else }}
+  Database URL: postgresql://login:password@{{ .Release.Name }}-db-svc:{{ .Values.db.port_ext | default .Values.db.port }}/{{ .Values.db.name }}
+    Login and password are generic by Helm and can be viewed by edit secret {{ .Release.Name }}-db-secret
+    Restore from base64: echo <CODE> | base64 -d && echo
+  {{- end }}
+
+------------------------------------------------------------

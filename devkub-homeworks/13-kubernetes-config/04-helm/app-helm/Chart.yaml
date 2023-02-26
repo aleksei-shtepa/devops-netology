@@ -1,0 +1,8 @@
+apiVersion: v2
+name: app-helm
+description: Учебное приложение App-Helm для домашнего задания 13.4
+
+type: application
+
+version: 1.0.1
+appVersion: "1.2.3"

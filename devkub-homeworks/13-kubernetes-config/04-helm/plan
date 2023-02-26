@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+
+if ! [ -x "$(command -v terraform)" ]; then
+	echo 'Terraform is not installed. Visit: https://hashicorp-releases.yandexcloud.net/terraform/' >&2
+	exit 1
+fi
+
+if ! [ -x "$(command -v yc)" ]; then
+	echo 'Yandex CLI is not installed. Visit: https://cloud.yandex.ru/docs/cli/quickstart' >&2
+	exit 2
+fi
+
+export TF_VAR_yc_token=$(yc config get token)
+export TF_VAR_yc_cloud_id=$(yc config get cloud-id)
+export TF_VAR_yc_folder_id=$(yc config get folder-id)
+
+PROJECT_PATH=terraform
+
+exec_terraform() {
+    cd $PROJECT_PATH
+    # pushd $PROJECT_PATH
+    terraform $1
+    # popd
+}
+
+init() {
+    exec_terraform init
+}
+
+plan() {
+    exec_terraform plan
+}
+
+apply() {
+    exec_terraform "apply -auto-approve"
+}
+
+destroy() {
+    exec_terraform destroy
+}
+
+clear() {
+    destroy
+    rm -rf $PROJECT_PATH/.terraform*
+    rm $PROJECT_PATH/terraform.tfstate*
+}
+
+# playbook() {
+#     if [ $2 ]; then
+#         cd playbook && ansible-playbook site.yml --diff -i inventory/inventory.yml --tags $2
+#     else
+#         cd playbook && ansible-playbook site.yml --diff -i inventory/inventory.yml
+#     fi
+
+#     cd ..
+# }
+
+# setup() {
+#     cd playbook && ansible-galaxy install -r requirements.yml -p roles
+#     cd ..
+# }
+
+if [ $1 ]; then
+    $1
+else
+    plan
+fi
