@@ -25,7 +25,7 @@
 
 Файлы манифеста terraform расположены в каталоге [04-helm/terraform](04-helm/terraform/).
 
-Применение манифеста осуществляется скриптом:
+Применение манифеста осуществляется [скриптом](04-helm/plan):
 
 ```ShellSession
 cd 04-helm
@@ -37,9 +37,9 @@ cd 04-helm
 
 ## Задание 1
 
-Подготовил чарт для деплоя приложения [04-helm/app_helm/](04-helm/app_helm/).
+Подготовил чарт для деплоя приложения [04-helm/app-helm/](04-helm/app-helm/).
 
-Описание чарта [04-helm/app_helm/README.md](04-helm/app_helm/README.md).
+Описание чарта [04-helm/app-helm/README.md](04-helm/app-helm/README.md).
 
 ## Задание 2
 
